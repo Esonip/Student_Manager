@@ -11,193 +11,316 @@ const ll modd = 1e9 + 7;
 const ll inf = 1e9;
 const int N = 1e6 + 7;
 
-ifstream input("inp.txt");
-ofstream output;
+const string filename = "student.txt";
 
 struct SV
 {
     string mssv, name, sx, dis;
     float dtb;
-} ds[50];
+    int age;
+};
 int n;
 
-bool sosanh_mssv(const SV& sv1, const SV& sv2)
+void readFile(string filename, vector <SV> &ds)
 {
-    return sv1.mssv < sv2.mssv;
-}
-bool sosanh_dtb(const SV& sv1, const SV& sv2) 
-{
-    return sv1.dtb < sv2.dtb;
-}
-void nhap_ttsv(SV &ds, ifstream &input)
-{
-    input >> ds.mssv;
-    output << "Nhap MSSV: " << ds.mssv << endl;
-    input.ignore(32767, '\n');
-    getline(input, ds.name);
-    output << "Nhap ho ten: " << ds.name << endl;
-    getline(input, ds.sx);
-    output << "Nhap gioi tinh: " << ds.sx << endl;
-    getline(input, ds.dis);
-    output << "Nhap dia chi: " << ds.dis << endl;
-    input >> ds.dtb;
-    output << "Nhap diem trung binh: " << float(ds.dtb) << endl;
+    ifstream file(filename);
+    if (!file.is_open())
+    {
+        cout << "Failed to open file " << filename << "." << endl;
+        return;
+    }
+    string line;
+    while (getline(file, line))
+    {
+        stringstream ss(line);
+        string token;
+
+        SV ds1;
+        getline(ss, token, ';');
+        ds1.mssv = token;
+        getline(ss, token, ';');
+        ds1.name = token;
+        getline(ss, token, ';');
+        ds1.age = stoi(token);
+        getline(ss, token, ';');
+        ds1.sx = token;
+        getline(ss, token, ';');
+        ds1.dis = token;
+        getline(ss, token, ';');
+        ds1.dtb = stof(token);
+        ds.push_back(ds1);
+    }
+
+    file.close();
 }
 
-void xuat_ttsv(SV &ds)
+void ss_mssv_ascending(vector <SV> &ds, int l, int r)
 {
-    output << left << setw(10) << ds.mssv << setw(20) << ds.name << setw(15) << ds.sx << setw(15) << ds.dis << setw(15) << ds.dtb << endl;
+    if(l >= r) return;
+    string x = ds[(l + r) / 2].mssv;
+    int i = l, j = r;
+    while(i < j)
+    {
+        while(ds[i].mssv < x) i++;
+        while(ds[j].mssv > x) j--;
+        if(i <= j)
+        {
+            swap(ds[i], ds[j]);
+            i++; j--;
+        }
+    }
+    if(l < j) ss_mssv_ascending(ds, l, j);
+    if(i < r) ss_mssv_ascending(ds, i, r);
 }
-int tim_ttsv(SV ds[], string ms)
+void ss_dtb_ascending(vector <SV> &ds, int l, int r)
 {
-    int l = 0, r = n - 1;
-    while(l <= r)
+    if(l >= r) return;
+    float x = ds[(l + r) / 2].dtb;
+    int i = l, j = r;
+    while(i < j)
+    {
+        while(ds[i].dtb < x) i++;
+        while(ds[j].dtb > x) j--;
+        if(i <= j)
+        {
+            swap(ds[i], ds[j]);
+            i++; j--;
+        }
+    }
+    if(l < j) ss_dtb_ascending(ds, l, j);
+    if(i < r) ss_dtb_ascending(ds, i, r);
+}
+bool check_name(const string &s)
+{
+    for(char k: s)
+        if(!isalpha(k) && k != ' ') return false;
+    return true;
+}
+int tim_ttsv(vector <SV> &ds, string ms)
+{
+    int l = 0, r = ds.size() - 1;
+    while (l <= r)
     {
         int mid = (l + r) / 2;
-        if(ds[mid].mssv == ms) return mid;
-        else if(ds[mid].mssv < ms) l = mid + 1;
-        else r = mid - 1;
+        if (ds[mid].mssv == ms)
+            return mid;
+        else if (ds[mid].mssv < ms)
+            l = mid + 1;
+        else
+            r = mid - 1;
     }
     return -1;
 }
-void sua_ttsv(SV ds[], string ms, ifstream &input)
+void sua_ttsv(vector <SV> &ds, string ms)
 {
     int k = tim_ttsv(ds, ms);
-    if(k == -1)
-        output << "Khong tim thay sinh vien" << endl;
+    if (k == -1)
+        cout << "Khong tim thay sinh vien" << endl;
     else
     {
-        string names, sxs, diss; float dtbs;
-        input.ignore(32767, '\n');
-        getline(input, names); output << "Nhap ho ten: " << names << endl; ds[k].name = names;
-        getline(input, sxs); output << "Nhap gioi tinh: " << sxs << endl; ds[k].sx = sxs;
-        getline(input, diss); output << "Nhap dia chi: " << diss << endl; ds[k].dis = diss;
-        input >> dtbs; output << "Nhap diem trung binh: " << dtbs << endl; ds[k].dtb = dtbs;
+        string names, sxs, diss;
+        float dtbs; int ages;
+        cin.ignore(32767, '\n');
+        cout << "Nhap ho ten: "; getline(cin, names);
+        while(!check_name(names))
+        {
+            cout << "Nhap sai cu phap. Vui long nhap lai! " << endl;
+            cout << "Nhap ho ten: "; getline(cin, names);
+        }
+        ds[k].name = names;
+        cout << "Nhap tuoi: "; cin >> ages;
+        ds[k].age = ages;
+        cin.ignore(32767, '\n');
+        cout << "Nhap gioi tinh: "; getline(cin, sxs);
+        while(!(sxs == "Nam" || sxs == "nam" || sxs == "Nu" || sxs == "nu"))
+        {
+            cout << "Nhap sai cu phap. Vui long nhap lai! " << endl;
+            cout << "Nhap gioi tinh: "; getline(cin, sxs);
+        }
+        ds[k].sx = sxs;
+        cout << "Nhap dia chi: "; getline(cin, diss);
+        ds[k].dis = diss;
+        cout << "Nhap diem trung binh: "; cin >> dtbs;
+        ds[k].dtb = dtbs;
     }
 }
-void xoa_ttsv(SV ds[], string ms)
+void xoa_ttsv(vector <SV> &ds, string ms)
 {
     int k = tim_ttsv(ds, ms);
-    if(k == -1)
-        output << "Khong tim thay sinh vien" << endl;
+    if (k == -1)
+        cout << "Khong tim thay sinh vien" << endl;
     else
     {
-        for(int i = k; i < n; i++)
-            ds[i] = ds[i + 1];
-        n--;
-        output << "Da xoa sinh vien" << endl;
+        ds.erase(ds.begin() + k);
+        cout << "Da xoa sinh vien" << endl;
     }
 }
-void chuc_nang(SV ds[])
+void nhap_ttsv(vector <SV> &ds, int n)
 {
-    output << "*****************************************************************" << endl;
-    output << "**********        CHUONG TRINH QUAN LY SINH VIEN       **********" << endl;
-    output << "*****************************************************************" << endl;
-    output << "***   1. In ra danh sach sinh vien                            ***" << endl;
-    output << "***   2. Nhap them sinh vien                                  ***" << endl;
-    output << "***   3. Sua thong tin 1 sinh vien voi MSSV                   ***" << endl;
-    output << "***   4. Tim kiem thong tin sinh vien voi MSSV                ***" << endl;
-    output << "***   5. Xoa 1 sinh vien voi MSSV                             ***" << endl;
-    output << "***   6. Sap xep danh sach SV theo thu tu tang dan cua DTB    ***" << endl;
-    output << "***   7. Liet ke cac sinh vien co DTB >= x                    ***" << endl;
-    output << "***   8. So luong sinh vien theo gioi tinh                    ***" << endl;
-    output << "***   9. Thoat                                                ***" << endl;
-    output << "*****************************************************************" << endl;
-    int k; input >> k;
-    output << "Chon chuc nang: " << k << endl;
+    SV a;
+    for (int i = 1; i <= n; i++)
+    {
+        cout << "Nhap thong tin sinh vien thu " << i << ":" << endl;
+        cin.ignore(32767, '\n');
+        cout << "Nhap MSSV: ";  getline(cin, a.mssv);
+        cout << tim_ttsv(ds, a.mssv) << endl;
+        while(!(tim_ttsv(ds, a.mssv) == -1 || a.mssv.size() == 8))
+        {
+            cout << "MSSV da ton tai hoac nhap khong hop le" << endl;
+            cout << "Nhap MSSV: "; cin.ignore(32767, '\n'); getline(cin, a.mssv);
+        }
+        cout << "Nhap ho ten: "; getline(cin, a.name);
+        while(!check_name(a.name))
+        {
+            cout << "Nhap sai cu phap. Vui long nhap lai! " << endl;
+            cout << "Nhap ho ten: "; getline(cin, a.name);
+        }
+        cout << "Nhap tuoi: "; cin >> a.age;
+        cin.ignore(32767, '\n');
+        cout << "Nhap gioi tinh: "; getline(cin, a.sx);
+        while(!(a.sx == "Nam" || a.sx == "nam" || a.sx == "Nu" || a.sx == "nu"))
+        {
+            cout << "Nhap sai cu phap. Vui long nhap lai! " << endl;
+            cout << "Nhap gioi tinh: "; getline(cin, a.sx);
+        }
+        cout << "Nhap dia chi: "; getline(cin, a.dis);
+        cout << "Nhap diem trung binh: "; cin >> a.dtb;
+    }
+    ds.push_back(a);
+}
+void xuat_ttsv(vector <SV> &ds, int fi, int se, int x)
+{
+    for(int i = 0; i < 87; i++)
+    {
+        if(i < 11) cout << " ";
+        else
+        {
+            if(i == 11 || i == 20 || i == 48 || i == 53 || i == 63 || i == 80 || i == 86) cout << "+";
+            else cout << "-";
+        }
+    }
+    cout << endl;
+    cout << setw(12) << "|" << "MSSV"  << setw(5) << "|"
+         << "Ho va Ten" << setw(19) << "|"
+         << "Tuoi" << "|"
+         << "Gioi tinh" << "|"
+         << "Thanh Pho" << setw(8) << "|"
+         << "DTB" << setw(3)<< "|"<< endl;
+    for(int i = 0; i < 87; i++)
+    {
+        if(i < 11) cout << " ";
+        else
+        {
+            if(i == 11 || i == 20 || i == 48 || i == 53 || i == 63 || i == 80 || i == 86) cout << "+";
+            else cout << "-";
+        }
+    }
+    cout << endl;
+    for(int i = fi; i <= se; i++)
+        if(ds[i].dtb >= x)
+            cout << setw(12) << "|" << ds[i].mssv << "|"
+                 << ds[i].name << setw(28 - ds[i].name.size()) << "|"
+                 << ds[i].age << setw(ds[i].age >= 10 ? 3 : 4) << "|"
+                 << ds[i].sx << setw(10 - ds[i].sx.size()) << "|"
+                 << ds[i].dis << setw(17 - ds[i].dis.size()) << "|"
+                 << fixed << setprecision(2) << ds[i].dtb << setw(ds[i].dtb == 10 ? 1: 2)<< "|" << endl;
+    for(int i = 0; i < 87; i++)
+    {
+        if(i < 11) cout << " ";
+        else
+        {
+            if(i == 11 || i == 20 || i == 48 || i == 53 || i == 63 || i == 80 || i == 86) cout << "+";
+            else cout << "-";
+        }
+    }
+    cout << endl;
+}
+void menu()
+{
+    cout << "*****************************************************************" << endl;
+    cout << "**********        CHUONG TRINH QUAN LY SINH VIEN       **********" << endl;
+    cout << "*****************************************************************" << endl;
+    cout << "***   1. In ra danh sach sinh vien                            ***" << endl;
+    cout << "***   2. Nhap them sinh vien                                  ***" << endl;
+    cout << "***   3. Sua thong tin 1 sinh vien voi MSSV                   ***" << endl;
+    cout << "***   4. Tim kiem thong tin sinh vien voi MSSV                ***" << endl;
+    cout << "***   5. Xoa 1 sinh vien voi MSSV                             ***" << endl;
+    cout << "***   6. Sap xep danh sach SV theo thu tu tang dan cua DTB    ***" << endl;
+    cout << "***   7. Liet ke cac sinh vien co DTB >= x                    ***" << endl;
+    cout << "***   8. So luong sinh vien theo gioi tinh                    ***" << endl;
+    cout << "***   9. Thoat                                                ***" << endl;
+    cout << "*****************************************************************" << endl;
+}
+void chuc_nang(vector <SV> &ds)
+{
+    cout << "Chon chuc nang: "; int k; cin >> k;
     switch (k)
     {
         case 1: // in ds
         {
-            if(n == 0)
-                output << "Danh sach rong !!!" << endl;
+            if (ds.size() == 0) cout << "Danh sach rong !!!" << endl;
             else
             {
-                int k; input >> k;
-                output << "(0: Theo MSSV | 1: Tat ca cac sinh vien)" << k << endl;
-                output << left << setw(10) << "MSSV" << setw(20) << "Ho va Ten" << setw(15) << "Gioi tinh" << setw(15) << "Dia chi" << setw(15) << "Diem Trung Binh" << endl;
-                if(k == 0)
-                {
-                    string ms; input >> ms;
-                    output << "Nhap mssv can in: " << ms << endl;
-                    int k = tim_ttsv(ds, ms);
-                    if(k == -1)
-                        output << "Khong tim thay sinh vien" << endl;
-                    else xuat_ttsv(ds[k]);
-                }
-                else
-                    for (int i = 0; i < n; i++)
-                        xuat_ttsv(ds[i]);
+                ss_mssv_ascending(ds, 0, ds.size() - 1);
+                xuat_ttsv(ds, 0, ds.size() - 1, -1);
             }
             break;
         }
         case 2: // nhap ds
         {
-            int x; input >> x;
-            output << "Nhap so luong sinh vien: " << x << endl; 
-            for(int i = n; i < n + x; i++)
-            {
-                output << "---   Nhap thong tin sinh vien " << i + 1 << "   ---" << endl;
-                nhap_ttsv(ds[i], input);
-            }
-            n += x;
-            sort(ds, ds + n, sosanh_mssv);
+            cout << "Nhap so luong sinh vien can them : "; int x; cin >> x;
+            nhap_ttsv(ds, x);
             break;
         }
         case 3: // sua ds
         {
-            string ms; input >> ms;
-            output << "Nhap mssv can sua: " << ms << endl;
-            sua_ttsv(ds, ms, input); 
+            cout << "Nhap mssv can sua: "; string ms; cin >> ms;
+            sua_ttsv(ds, ms);
             break;
         }
         case 4: // search ds
         {
-            string ms; input >> ms;
-            output << "Nhap mssv can tim kiem: " << ms << endl;
+            cout << "Nhap mssv can tim kiem: "; string ms; cin >> ms;
             int k = tim_ttsv(ds, ms);
-            if(k == -1) output <<"Khong tim thay sinh vien";
-            else xuat_ttsv(ds[k]);
+            if (k == -1)
+                cout << "Khong tim thay sinh vien";
+            else
+                xuat_ttsv(ds, k, k, -1);
             break;
         }
-        case 5: // xoa ds
+        case 5: // xoa sv
         {
-            string ms; input >> ms;
-            output << "Nhap mssv can xoa: " << ms << endl;
+            cout << "Nhap mssv can xoa: "; string ms; cin >> ms;
             xoa_ttsv(ds, ms);
             break;
         }
         case 6: // dtb up
         {
-            output << "----- Danh sach sinh vien theo thu tu tang dan diem trung binh -----" << endl;
-            output << left << setw(10) << "MSSV" << setw(20) << "Ho va Ten" << setw(15) << "Gioi tinh" << setw(15) << "Dia chi" << setw(15) << "Diem Trung Binh" << endl;
-            sort(ds, ds + n, sosanh_dtb);
-            for (int i = 0; i < n; i++)
-                xuat_ttsv(ds[i]);
-            sort(ds, ds + n, sosanh_mssv);
+            cout << "----- Danh sach sinh vien theo thu tu tang dan diem trung binh -----" << endl;
+            ss_dtb_ascending(ds, 0, ds.size() - 1);
+            xuat_ttsv(ds, 0, ds.size() - 1, -1);
             break;
         }
         case 7: // list dtb >= x
         {
-            float x; input >> x;
-            output << "Nhap x: " << x << endl;
-            output << "----- Danh sach sinh vien co diem trung binh >= " << x << " -----" << endl;
-            output << left << setw(10) << "MSSV" << setw(20) << "Ho va Ten" << setw(15) << "Gioi tinh" << setw(15) << "Dia chi" << setw(15) << "Diem Trung Binh" << endl;
-            for(int i = 0; i < n; i++)
-                if(ds[i].dtb >= x) xuat_ttsv(ds[i]);
+            cout << "Nhap x: "; float x; cin >> x;
+            cout << "----- Danh sach sinh vien co diem trung binh >= " << x << " -----" << endl;
+            xuat_ttsv(ds, 0, ds.size() - 1, x);
             break;
         }
         case 8: // Cnt gender
         {
             int cnt_m = 0, cnt_f = 0;
-            for(int i = 0; i < n; i++)
-                if(ds[i].sx == "nam") cnt_m++;
-                else cnt_f++;
-            output << "So luong sinh vien nam: " << cnt_m << endl;
-            output << "So luong sinh vien nu: " << cnt_f << endl;
+            for (int i = 0; i < ds.size(); i++)
+                if (ds[i].sx == "nam" || ds[i].sx == "Nam")
+                    cnt_m++;
+                else
+                    cnt_f++;
+            cout << "So luong sinh vien nam: " << cnt_m << endl;
+            cout << "So luong sinh vien nu: " << cnt_f << endl;
             break;
         }
-        default: //exit
+        default: // exit
             exit(1);
             break;
     }
@@ -205,24 +328,20 @@ void chuc_nang(SV ds[])
 
 void solve()
 {
-    output.open("out.txt");
-    int k = 1;
-    while (k != 0)
-    {
-        chuc_nang(ds); input >> k;
-        output << "Ban co muon tiep tuc? (0: NO || 1: YES):  " << k << endl;
-    }
-    output.close();
+    vector<SV> ds;
+    readFile(filename, ds);
+    menu();
+    while (true)
+        chuc_nang(ds);
 }
 signed main()
 {
-    
+
     // ios_base::sync_with_stdio(false);cin.tie(NULL);cout.tie(NULL);
     // #ifndef ONLINE_JUDGE
     // freopen("inp.txt", "r", stdin); freopen("out.txt", "w", stdout);
     // #endif
-    
-    
+
     // int t; cin >> t;
     int t = 1;
     while (t--)
