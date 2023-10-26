@@ -53,6 +53,19 @@ void readFile(string filename, vector <SV> &ds)
 
     file.close();
 }
+void saveFile(string filename, vector <SV> &ds)
+{
+    ofstream file(filename);
+    if (!file.is_open()) {
+        cout << "Failed to open file " << filename << "." << endl;
+        return;
+    }
+
+    for (auto &i: ds) {
+        file << i.mssv << ";" << i.name << ";" << i.age << ";" << i.sx << ";" << i.dis << ";" << fixed << setprecision(2) << i.dtb << "\n";
+    }
+    file.close();
+}
 
 void ss_mssv_ascending(vector <SV> &ds, int l, int r)
 {
@@ -163,11 +176,10 @@ void nhap_ttsv(vector <SV> &ds, int n)
         cout << "Nhap thong tin sinh vien thu " << i << ":" << endl;
         cin.ignore(32767, '\n');
         cout << "Nhap MSSV: ";  getline(cin, a.mssv);
-        cout << tim_ttsv(ds, a.mssv) << endl;
-        while(!(tim_ttsv(ds, a.mssv) == -1 || a.mssv.size() == 8))
+        while(tim_ttsv(ds, a.mssv) != -1 || a.mssv.size() != 8)
         {
             cout << "MSSV da ton tai hoac nhap khong hop le" << endl;
-            cout << "Nhap MSSV: "; cin.ignore(32767, '\n'); getline(cin, a.mssv);
+            cout << "Nhap MSSV: "; getline(cin, a.mssv);
         }
         cout << "Nhap ho ten: "; getline(cin, a.name);
         while(!check_name(a.name))
@@ -270,12 +282,14 @@ void chuc_nang(vector <SV> &ds)
         {
             cout << "Nhap so luong sinh vien can them : "; int x; cin >> x;
             nhap_ttsv(ds, x);
+            saveFile(filename, ds);
             break;
         }
         case 3: // sua ds
         {
             cout << "Nhap mssv can sua: "; string ms; cin >> ms;
             sua_ttsv(ds, ms);
+            saveFile(filename, ds);
             break;
         }
         case 4: // search ds
@@ -292,6 +306,7 @@ void chuc_nang(vector <SV> &ds)
         {
             cout << "Nhap mssv can xoa: "; string ms; cin >> ms;
             xoa_ttsv(ds, ms);
+            saveFile(filename, ds);
             break;
         }
         case 6: // dtb up
@@ -299,6 +314,7 @@ void chuc_nang(vector <SV> &ds)
             cout << "----- Danh sach sinh vien theo thu tu tang dan diem trung binh -----" << endl;
             ss_dtb_ascending(ds, 0, ds.size() - 1);
             xuat_ttsv(ds, 0, ds.size() - 1, -1);
+            saveFile(filename, ds);
             break;
         }
         case 7: // list dtb >= x
@@ -311,7 +327,7 @@ void chuc_nang(vector <SV> &ds)
         case 8: // Cnt gender
         {
             int cnt_m = 0, cnt_f = 0;
-            for (int i = 0; i < ds.size(); i++)
+            for (ll i = 0; i < ds.size(); i++)
                 if (ds[i].sx == "nam" || ds[i].sx == "Nam")
                     cnt_m++;
                 else
@@ -321,8 +337,10 @@ void chuc_nang(vector <SV> &ds)
             break;
         }
         default: // exit
+        {
+            cout << "Thoat chuong trinh" << endl;
             exit(1);
-            break;
+        }
     }
 }
 
